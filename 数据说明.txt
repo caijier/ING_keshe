@@ -1,0 +1,12 @@
+乳腺癌数据下载网址UCSC：https://xenabrowser.net/datapages/
+
+各组学数据具体下载页面：
+https://xenabrowser.net/datapages/?cohort=TCGA%20Breast%20Cancer%20(BRCA)&removeHub=https%3A%2F%2Fxena.treehouse.gi.ucsc.edu%3A443
+
+已下载的组学有：miRNA,蛋白质表达，基因表达，甲基化，拷贝数变异，体细胞突变，通路活性，转录因子调控影响的数据。
+及临床变量数据。每种数据下载后可用excel打开，再另存为.txt文件，便于用R或matlab读取数据。
+
+每个文件夹是一种组学数据及其readme数据说明文件，数据说明来自数据下载页面。
+
+
+
