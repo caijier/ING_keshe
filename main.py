@@ -1,5 +1,5 @@
 import sklearn as sk
-import numpy   as np
+import numpy      as np
 
 file1 = open(r'.\brca\miRNA'
              r'\miRNA_HiSeq_gene.txt', 'r', encoding='ANSI')  # mirna数据集
