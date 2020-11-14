@@ -1,6 +1,6 @@
 import sklearn as sk
 import numpy      as np
-
+import sys
 file1 = open(r'.\brca\miRNA'
              r'\miRNA_HiSeq_gene.txt', 'r', encoding='ANSI')  # mirna数据集
 
@@ -37,36 +37,46 @@ row_num = 0
 column_num = 0
 
 matrix = np.zeros((1360, 560000), dtype=np.float)
+column_index = 0
+
 
 # process file1 begin
+tem_gene_list = []  # 文件内基因索引映射到全局列表
 first_line = file1.readline().split()
 for gene in first_line[1:]:
-    row_dict[gene] = row_num
-    row_list.append(gene)
-    row_num += 1
+    if gene not in row_dict:
+        row_dict[gene] = row_num
+        row_list.append(gene)
+        row_num += 1
+    tem_gene_list.append(row_dict[gene])
 lines = file1.readlines()
-column_index = 0
 for line in lines:
     word = line.split()
     sum_column = 0  # 该条件的数据和
     num_valid = 0  # 有效数据个数
+    maxd = sys.float_info.min
+    mind = sys.float_info.max
     for item in word[1:]:
         if item != "NA":
+            if maxd < float(item):
+                maxd = float(item)
+            if mind > float(item):
+                mind = float(item)
             sum_column += float(item)
             num_valid += 1
     if num_valid/(len(word)-1) < 0.7:
         continue
     else:
-        ave = sum_column/num_valid
+        ave = (sum_column/num_valid-mind)/(maxd-mind)
     column_list.append(word[0])
     column_dict[word[0]] = column_num
     row_index = 0
     for item in word[1:]:
         if item != "NA":
-            matrix[row_index][column_index] = float(item)
+            matrix[tem_gene_list[row_index]][column_index] = (float(item)-mind)/(maxd-mind)
         else:
-            matrix[row_index][column_index] = ave
-        print("++", row_index, column_index, matrix[row_index][column_index])
+            matrix[tem_gene_list[row_index]][column_index] = ave
+        print("++", tem_gene_list[row_index], column_index, matrix[row_index][column_index])
         row_index += 1
     column_index += 1
 # pocess file1 end
