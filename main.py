@@ -29,13 +29,70 @@ file9 = open(r'.\brca\临床变量clinical'
              r'\BRCA_clinicalMatrix_1.txt', 'r', encoding='UTF-8')  # 临床变量
 
 file = [file1, file2, file3, file4, file5, file6, file7, file8, file9]
-num = 1
-for k in file:
-    print(num)
-    num += 1
-    print(k.readline())
-    k.close()
+row_dict = {}  # 基因名到行索引的映射字典
+column_dict = {}  # 条件名到列索引的映射字典
+row_list = []  # 行索引到基因名的映射字典
+column_list = []  # 列索引到基因名的映射列表
+row_num = 0
+column_num = 0
 
+matrix = np.zeros((1360, 560000), dtype=np.float)
+
+# process file1 begin
+first_line = file1.readline().split()
+for gene in first_line[1:]:
+    row_dict[gene] = row_num
+    row_list.append(gene)
+    row_num += 1
+lines = file1.readlines()
+column_index = 0
+for line in lines:
+    word = line.split()
+    sum_column = 0  # 该条件的数据和
+    num_valid = 0  # 有效数据个数
+    for item in word[1:]:
+        if item != "NA":
+            sum_column += float(item)
+            num_valid += 1
+    if num_valid/(len(word)-1) < 0.7:
+        continue
+    else:
+        ave = sum_column/num_valid
+    column_list.append(word[0])
+    column_dict[word[0]] = column_num
+    row_index = 0
+    for item in word[1:]:
+        if item != "NA":
+            matrix[row_index][column_index] = float(item)
+        else:
+            matrix[row_index][column_index] = ave
+        print("++", row_index, column_index, matrix[row_index][column_index])
+        row_index += 1
+    column_index += 1
+# pocess file1 end
+
+print("--->"),
+print(matrix[0])
+
+
+
+
+d = set()
+for k in file[:7]:
+    s = k.readline()
+    for item in s.split():
+        d.add(item)
+    print(column_num)
+    column_num += 1
+    print(s)
+    k.close()
+lines = file8.readlines()
+for line in lines:
+    d.add(line.split()[0])
+lines = file9.readlines()
+for line in lines:
+    d.add(line.split()[0])
+print(d.__len__())
 
 
 
