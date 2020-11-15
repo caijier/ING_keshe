@@ -1,7 +1,9 @@
 import sklearn as sk
 import numpy      as np
 import sys
-
+from matplotlib import pyplot as plt
+#  判断是否表示数字
+import matplotlib; matplotlib.use('TkAgg')
 
 def is_number(num):
     try:
@@ -87,13 +89,11 @@ for file in [file1, file2, file4]:
                 matrix[tem_gene_list[row_index]][column_index] = (float(item) - mind) / (maxd - mind)
             else:
                 matrix[tem_gene_list[row_index]][column_index] = ave
-            #print("++", tem_gene_list[row_index], column_index, matrix[row_index][column_index])
             row_index += 1
         column_index += 1
     print(column_index)
 
 #  end
-
 
 
 #  process file7
@@ -114,7 +114,6 @@ for line in lines:
     mind = sys.float_info.max
     for item in word[1:]:
         if not is_number(item):
-            print(item)
             continue
         if item != 0:
             if maxd < float(item):
@@ -133,10 +132,8 @@ for line in lines:
     for item in word[1:]:
         if not is_number(item):
             continue
-     #   print(row_index)
         if row_index >= len(tem_gene_list):
             break
-     #   print("++", tem_gene_list[row_index], column_index)
         if item != "NA":
             matrix[tem_gene_list[row_index]][column_index] = (float(item) - mind) / (maxd - mind)
         else:
@@ -145,10 +142,46 @@ for line in lines:
     column_index += 1
 #  file7 process end
 
+# process file5
+tem_gene_list = []  # 文件内基因索引映射到全局列表
+first_line = file5.readline().split()
+for gene in first_line[2:]:
+    if gene not in row_dict:
+        row_dict[gene] = row_num
+        row_list.append(gene)
+        row_num += 1
+    tem_gene_list.append(row_dict[gene])
+lines = file5.readlines()
+for line in lines:
+    word = line.split()
+    sum_column = 0  # 该条件的数据和
+    column_list.append(word[0])
+    column_dict[word[0]] = column_num
+    row_index = 0
+    for item in word[1:]:
+        if item == -2:
+            matrix[tem_gene_list[row_index]][column_index] = 0.01
+        elif item == -1:
+            matrix[tem_gene_list[row_index]][column_index] = 0.25
+        elif item == 0:
+            matrix[tem_gene_list[row_index]][column_index] = 0.5
+        elif item == 1:
+            matrix[tem_gene_list[row_index]][column_index] = 0.75
+        elif item == 2:
+            matrix[tem_gene_list[row_index]][column_index] = 1
+        row_index += 1
+    column_index += 1
+print(column_index)
 
+tem_gene_list = []
+first_line = file5.readline().split()
+m = matrix[0:100, 0:100]
+m
+plt.matshow(m, cmap=plt.cm.Blues)
+#  process end
 print("--->"),
-print(matrix[0])
-
+print(matrix)
+print(len(row_dict))
 
 
 """
