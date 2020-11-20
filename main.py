@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 #  判断是否表示数字
 import matplotlib; matplotlib.use('TkAgg')
 
+
 def is_number(num):
     try:
         float(num)
@@ -45,9 +46,11 @@ row_dict = {}  # 基因名到行索引的映射字典
 column_dict = {}  # 条件名到列索引的映射字典
 row_list = []  # 行索引到基因名的映射字典
 column_list = []  # 列索引到基因名的映射列表
-row_num = 0
+row_num = 0  # 全局行索引
 column_num = 0
-
+min_list = []
+max_list = []
+ave_list = []
 matrix = np.zeros((2000, 200000), dtype=np.float)
 column_index = 0
 
@@ -57,12 +60,12 @@ for file in [file1, file2, file4]:
     tem_gene_list = []  # 文件内基因索引映射到全局列表
     first_line = file.readline().split()
     for gene in first_line[1:]:
-        if gene not in row_dict:
+        if gene not in row_dict:  # 没有出现过的基因名
             row_dict[gene] = row_num
             row_list.append(gene)
             row_num += 1
         tem_gene_list.append(row_dict[gene])
-    lines = file.readlines()
+    lines = file.readlines()  # 读取剩下行
     for line in lines:
         word = line.split()
         sum_column = 0  # 该条件的数据和
@@ -77,16 +80,21 @@ for file in [file1, file2, file4]:
                     mind = float(item)
                 sum_column += float(item)
                 num_valid += 1
-        if num_valid / (len(word) - 1) < 0.7:
+        if num_valid / (len(word) - 1) < 0.7:  # 有效数据比例判定
             continue
-        else:
-            ave = (sum_column / num_valid - mind) / (maxd - mind)
+        ave = (sum_column / num_valid - mind) / (maxd - mind)  # 该条件的归一化平均值
+
+        #  记录全局该条件的数据信息
+        min_list.append(mind)
+        max_list.append(maxd)
+        ave_list.append(ave)
+
         column_list.append(word[0])
         column_dict[word[0]] = column_num
-        row_index = 0
+        row_index = 0  # 文件行指向索引
         for item in word[1:]:
             if item != "NA":
-                matrix[tem_gene_list[row_index]][column_index] = (float(item) - mind) / (maxd - mind)
+                matrix[tem_gene_list[row_index]][column_index] = (float(item) - mind) / (maxd - mind)  # 归一化处理
             else:
                 matrix[tem_gene_list[row_index]][column_index] = ave
             row_index += 1
@@ -122,10 +130,12 @@ for line in lines:
                 mind = float(item)
             sum_column += float(item)
             num_valid += 1
-    if mind == maxd or num_valid / (len(word) - 1) < 0.7:  # 剔除不需要的条件
+    if mind == maxd or num_valid / (len(word) - 1) < 0.7:  # 剔除不需要的条件（全都相同或者有效数据比例不够）
         continue
-    else:
-        ave = (sum_column / num_valid - mind) / (maxd - mind)
+    ave = (sum_column / num_valid - mind) / (maxd - mind)
+    min_list.append(mind)
+    max_list.append(maxd)
+    ave_list.append(ave)
     column_list.append(word[0])
     column_dict[word[0]] = column_num
     row_index = 0
@@ -158,6 +168,10 @@ for line in lines:
     column_list.append(word[0])
     column_dict[word[0]] = column_num
     row_index = 0
+
+    min_list.append(0)
+    max_list.append(1)
+    ave_list.append(0.5)
     for item in word[1:]:
         if item == -2:
             matrix[tem_gene_list[row_index]][column_index] = 0.01
@@ -173,8 +187,44 @@ for line in lines:
     column_index += 1
 print(column_index)
 
-tem_gene_list = []
-first_line = file5.readline().split()
+
+# process file8  没有归一化
+unsta_min = column_index
+first_line = file8.readline().split()
+for condi in first_line:
+    column_list.append(column_index)
+    column_dict[condi] = column_index
+    min_list.append(sys.float_info.max)
+    max_list.append(sys.float_info.min)
+    ave_list.append(0)
+    column_index += 1
+unsta_max = column_index - 1
+
+lines = file8.readlines()
+for line in lines:
+    column_index = unsta_min
+    word = line.split()
+    gene = word[0]
+    if gene not in row_dict:
+        row_dict[gene] = row_num
+        row_list.append(gene)
+        row_num += 1
+    row_index = row_dict[gene]  # 获取全局行号
+    for item in word[1:]:
+        value = float(item)
+        matrix[row_index][column_index] = value
+        if value < min_list[column_index]:
+            min_list[column_index] = value
+        if value > max_list[column_index]:
+            max_list[column_index] = value
+        if value != 0:
+            ave_list[column_index] += 1  # 此时ave_list复用表示非零元素个数
+        column_index += 1
+print(unsta_max)
+
+
+
+
 m = matrix[0:100, 0:100]
 m
 plt.matshow(m, cmap=plt.cm.Blues)
