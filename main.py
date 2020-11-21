@@ -53,7 +53,7 @@ column_num = 0
 min_list = []
 max_list = []
 ave_list = []
-matrix = np.zeros((1300, 600000), dtype=np.float)
+matrix = np.zeros((1300, 500000), dtype=np.float)
 column_index = 0
 
 
