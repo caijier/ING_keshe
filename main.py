@@ -2,7 +2,7 @@ import numpy      as np
 import sys
 from matplotlib import pyplot as plt
 #  判断是否表示数字
-import matplotlib; matplotlib.use('TkAgg')
+
 from sklearn.datasets import make_biclusters
 from sklearn.cluster import SpectralCoclustering
 from sklearn.metrics import consensus_score
@@ -53,12 +53,12 @@ column_num = 0
 min_list = []
 max_list = []
 ave_list = []
-matrix = np.zeros((1300, 500000), dtype=np.float)
+matrix = np.zeros((1300, 60000), dtype=np.float)
 column_index = 0
 
 
 #  process file1 file2 file4
-for file in [file1, file2, file3, file4]:
+for file in [file1, file2, file4]:
     tem_gene_list = []  # 文件内基因索引映射到全局列表
     first_line = file.readline().split()
     for gene in first_line[1:]:
@@ -96,9 +96,9 @@ for file in [file1, file2, file3, file4]:
         row_index = 0  # 文件行指向索引
         for item in word[1:]:
             if item != "NA":
-                matrix[tem_gene_list[row_index]][column_index] = (float(item) - mind) / (maxd - mind)  # 归一化处理
-            else:
-                matrix[tem_gene_list[row_index]][column_index] = ave
+                matrix[tem_gene_list[row_index]][column_index] = 100*(float(item) - mind) / (maxd - mind)  # 归一化处理
+         #   else:
+          #      matrix[tem_gene_list[row_index]][column_index] = ave
             row_index += 1
         column_index += 1
     print(column_index)
@@ -147,9 +147,9 @@ for line in lines:
         if row_index >= len(tem_gene_list):
             break
         if item != "NA":
-            matrix[tem_gene_list[row_index]][column_index] = (float(item) - mind) / (maxd - mind)
-        else:
-            matrix[tem_gene_list[row_index]][column_index] = ave
+            matrix[tem_gene_list[row_index]][column_index] = 100*(float(item) - mind) / (maxd - mind)
+     #   else:
+     #       matrix[tem_gene_list[row_index]][column_index] = ave
         row_index += 1
     column_index += 1
 #  file7 process end
@@ -176,15 +176,15 @@ for line in lines:
     ave_list.append(0.5)
     for item in word[1:]:
         if item == -2:
-            matrix[tem_gene_list[row_index]][column_index] = 0.01
-        elif item == -1:
-            matrix[tem_gene_list[row_index]][column_index] = 0.25
-        elif item == 0:
-            matrix[tem_gene_list[row_index]][column_index] = 0.5
-        elif item == 1:
-            matrix[tem_gene_list[row_index]][column_index] = 0.75
-        elif item == 2:
             matrix[tem_gene_list[row_index]][column_index] = 1
+        elif item == -1:
+            matrix[tem_gene_list[row_index]][column_index] = 25
+        elif item == 0:
+            matrix[tem_gene_list[row_index]][column_index] = 50
+        elif item == 1:
+            matrix[tem_gene_list[row_index]][column_index] = 75
+        elif item == 2:
+            matrix[tem_gene_list[row_index]][column_index] = 100
         row_index += 1
     column_index += 1
 print(column_index)
@@ -213,7 +213,7 @@ for line in lines:
         row_num += 1
     row_index = row_dict[gene]  # 获取全局行号
     for item in word[1:]:
-        value = float(item)
+        value = 100*float(item)
         matrix[row_index][column_index] = value
         if value < min_list[column_index]:
             min_list[column_index] = value
@@ -225,15 +225,25 @@ for line in lines:
 print(unsta_max)
 print("row_num", row_num)
 
-m = matrix[900:1000, 0:100]
+m = matrix[400:600, 15900:16100]
+
 plt.matshow(m, cmap=plt.cm.Blues)
 
 #  跑对角线双聚类 每个基因打上0.。4 的标签
-'''
+
 model = SpectralCoclustering(n_clusters=10, random_state=0)
 model.fit(matrix)
-print(model.row_labels_)
-'''
+for i in range(len(row_dict)):
+    print(i, '.', row_list[i], ':', model.row_labels_[i])
+print(model.column_labels_)
+
+plt.matshow(matrix, cmap=plt.cm.Blues)
+
+fit_data = matrix[np.argsort(model.row_labels_)]
+fit_data = fit_data[:, np.argsort(model.column_labels_)]
+plt.matshow(fit_data, cmap=plt.cm.gray)
+plt.show()
+
 #  process end
 print("--->")
 print(m)
