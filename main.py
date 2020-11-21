@@ -1,11 +1,13 @@
-import sklearn as sk
 import numpy      as np
 import sys
 from matplotlib import pyplot as plt
 #  判断是否表示数字
 import matplotlib; matplotlib.use('TkAgg')
+from sklearn.datasets import make_biclusters
+from sklearn.cluster import SpectralCoclustering
+from sklearn.metrics import consensus_score
 
-
+np.set_printoptions(threshold=np.inf)
 def is_number(num):
     try:
         float(num)
@@ -51,12 +53,12 @@ column_num = 0
 min_list = []
 max_list = []
 ave_list = []
-matrix = np.zeros((2000, 200000), dtype=np.float)
+matrix = np.zeros((1300, 600000), dtype=np.float)
 column_index = 0
 
 
 #  process file1 file2 file4
-for file in [file1, file2, file4]:
+for file in [file1, file2, file3, file4]:
     tem_gene_list = []  # 文件内基因索引映射到全局列表
     first_line = file.readline().split()
     for gene in first_line[1:]:
@@ -221,17 +223,23 @@ for line in lines:
             ave_list[column_index] += 1  # 此时ave_list复用表示非零元素个数
         column_index += 1
 print(unsta_max)
+print("row_num", row_num)
 
-
-
-
-m = matrix[0:100, 0:100]
-m
+m = matrix[900:1000, 0:100]
 plt.matshow(m, cmap=plt.cm.Blues)
+
+#  跑对角线双聚类 每个基因打上0.。4 的标签
+'''
+model = SpectralCoclustering(n_clusters=10, random_state=0)
+model.fit(matrix)
+print(model.row_labels_)
+'''
 #  process end
-print("--->"),
-print(matrix)
+print("--->")
+print(m)
 print(len(row_dict))
+
+
 
 
 """
